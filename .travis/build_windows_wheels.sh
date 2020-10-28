@@ -5,14 +5,17 @@ set -e -x
 build_dll() {
     ./autogen.sh
     echo "LDFLAGS = -no-undefined" >> Makefile.am
-    ./configure --host=$1 --enable-module-recovery --enable-experimental --enable-module-ecdh --enable-endomorphism --disable-jni
+    ./configure --host=$1 --enable-module-recovery --enable-experimental --enable-module-ecdh --enable-endomorphism --disable-jni --disable-openssl-tests --with-bignum=no --enable-module-ed25519 --enable-module-generator --enable-module-dleag --enable-module-ecdsaotves
     make
 }
 
 cd ..
-git clone https://github.com/bitcoin-core/secp256k1.git
+#git clone https://github.com/bitcoin-core/secp256k1.git
+#mv secp256k1 64bit
+wget -O secp256k1_anonswap.zip https://github.com/tecnovert/secp256k1/archive/anonswap.zip
+unzip secp256k1_anonswap.zip
+mv secp256k1-anonswap 64bit
 
-mv secp256k1 64bit
 cp 64bit 32bit -R
 
 cd 64bit

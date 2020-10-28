@@ -5,6 +5,7 @@ import platform
 import shutil
 import subprocess
 import tarfile
+import zipfile
 from distutils import log
 from distutils.command.build_clib import build_clib as _build_clib
 from distutils.command.build_ext import build_ext as _build_ext
@@ -48,6 +49,7 @@ def download_library(command):
     if command.dry_run:
         return
     libdir = absolute('libsecp256k1')
+    zipdir = absolute('secp256k1-anonswap')
     if os.path.exists(os.path.join(libdir, 'autogen.sh')):
         # Library already downloaded
         return
@@ -55,7 +57,16 @@ def download_library(command):
         command.announce('downloading libsecp256k1 source code', level=log.INFO)
         try:
             import requests
-
+            zip_url = 'https://github.com/tecnovert/secp256k1/archive/anonswap.zip'
+            r = requests.get(zip_url, stream=True)
+            status_code = r.status_code
+            if status_code == 200:
+                content = BytesIO(r.raw.read())
+                content.seek(0)
+                with zipfile.ZipFile(content) as zip_ref:
+                    zip_ref.extractall(absolute())
+                shutil.move(zipdir, libdir)
+            """
             r = requests.get(LIB_TARBALL_URL, stream=True)
             status_code = r.status_code
             if status_code == 200:
@@ -67,6 +78,7 @@ def download_library(command):
                 shutil.move(dirname, libdir)
             else:
                 raise SystemExit('Unable to download secp256k1 library: HTTP-Status: %d', status_code)
+            """
         except requests.exceptions.RequestException as e:
             raise SystemExit('Unable to download secp256k1 library: %s', str(e))
 
@@ -127,9 +139,9 @@ class build_clib(_build_clib):
         return build_flags('libsecp256k1', 'l', os.path.abspath(self.build_temp))
 
     def run(self):
-        if has_system_lib():
-            log.info('Using system library')
-            return
+        #if has_system_lib():
+        #    log.info('Using system library')
+        #    return
 
         build_temp = os.path.abspath(self.build_temp)
 
@@ -175,13 +187,18 @@ class build_clib(_build_clib):
             '--disable-dependency-tracking',
             '--with-pic',
             '--enable-module-recovery',
-            '--disable-jni',
             '--prefix',
             os.path.abspath(self.build_clib),
             '--enable-experimental',
             '--enable-module-ecdh',
-            '--enable-benchmark=no',
-            #  '--enable-endomorphism',
+            #'--enable-benchmark=no',
+            '--enable-benchmark=yes',
+            '--enable-module-ed25519',
+            '--enable-module-generator',
+            '--enable-module-dleag',
+            '--enable-module-ecdsaotves',
+            '--with-bignum=no',
+            '--with-valgrind=no'
         ]
 
         log.debug('Running configure: {}'.format(' '.join(cmd)))
