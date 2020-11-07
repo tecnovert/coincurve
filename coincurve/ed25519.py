@@ -25,6 +25,14 @@ def get_valid_secret():
                 return secret
 
 
+def ed25519_get_pubkey(privkey):
+    pubkey_output = ffi.new('unsigned char[{}]'.format(32))
+    privkey_le = privkey[::-1]
+    rv = lib.crypto_scalarmult_ed25519_base_noclamp(pubkey_output, privkey_le)
+    assert(rv == 0)
+    return bytes(ffi.buffer(pubkey_output, 32))
+
+
 class Ed25519PrivateKey:
     def __init__(self, secret=None, context=GLOBAL_CONTEXT):
         self.context = context

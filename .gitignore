@@ -14,3 +14,4 @@
 
 /coincurve/_libsecp256k1.py
 /coincurve/libsecp256k1.dll
+libsecp256k1
