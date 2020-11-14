@@ -23,3 +23,13 @@ int secp256k1_dleag_verify(
     const unsigned char *gen_e_a,
     const unsigned char *gen_e_b
 );
+
+int secp256k1_dleag_verify_secp256k1_point(
+    const secp256k1_context *ctx,
+    const unsigned char *p
+);
+
+int secp256k1_dleag_verify_ed25519_point(
+    const secp256k1_context *ctx,
+    const unsigned char *p
+);

@@ -18,7 +18,7 @@ def get_nonce():
         return urandom(32)
 
 
-def dleag_prove(private_key, context=GLOBAL_CONTEXT):
+def dleag_prove(private_key, nonce_bytes=None, context=GLOBAL_CONTEXT):
     proof_length = dleag_proof_len()
     proof_output = ffi.new('unsigned char[{}]'.format(proof_length))
 
@@ -26,7 +26,8 @@ def dleag_prove(private_key, context=GLOBAL_CONTEXT):
     proof_length_p[0] = proof_length
 
     # nonce_bytes = ffi.from_buffer(secrets.token_bytes(32))
-    nonce_bytes = get_nonce()
+    if nonce_bytes is None:
+        nonce_bytes = get_nonce()
     rv = lib.secp256k1_dleag_prove(
         context.ctx,
         proof_output,
@@ -60,6 +61,30 @@ def dleag_verify(proof, context=GLOBAL_CONTEXT):
         ffi.addressof(lib.secp256k1_generator_const_h),
         lib.ed25519_gen,
         lib.ed25519_gen2,
+    )
+
+    return True if rv == 1 else False
+
+
+def verify_secp256k1_point(pubkey_bytes, context=GLOBAL_CONTEXT):
+    if len(pubkey_bytes) != 33:
+        raise ValueError('Invalid pubkey length')
+
+    rv = lib.secp256k1_dleag_verify_secp256k1_point(
+        context.ctx,
+        pubkey_bytes
+    )
+
+    return True if rv == 1 else False
+
+
+def verify_ed25519_point(pubkey_bytes, context=GLOBAL_CONTEXT):
+    if len(pubkey_bytes) != 32:
+        raise ValueError('Invalid pubkey length')
+
+    rv = lib.secp256k1_dleag_verify_ed25519_point(
+        context.ctx,
+        pubkey_bytes
     )
 
     return True if rv == 1 else False
