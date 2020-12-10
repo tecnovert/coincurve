@@ -139,9 +139,9 @@ class build_clib(_build_clib):
         return build_flags('libsecp256k1', 'l', os.path.abspath(self.build_temp))
 
     def run(self):
-        #if has_system_lib():
-        #    log.info('Using system library')
-        #    return
+        if has_system_lib():
+            log.info('Using system library')
+            return
 
         build_temp = os.path.abspath(self.build_temp)
 
@@ -270,7 +270,7 @@ else:
 
 setup(
     name='coincurve',
-    version='13.0.0',
+    version='13.0.1',
 
     description='Cross-platform Python CFFI bindings for libsecp256k1',
     long_description=open('README.rst', 'r').read(),

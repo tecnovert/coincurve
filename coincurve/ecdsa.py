@@ -25,6 +25,17 @@ def der_to_cdata(der, context=GLOBAL_CONTEXT):
     return cdata
 
 
+def parse_compact(data, context=GLOBAL_CONTEXT):
+    cdata = ffi.new('secp256k1_ecdsa_signature *')
+    assert(len(data) == 64)
+    parsed = lib.secp256k1_ecdsa_signature_parse_compact(context.ctx, cdata, data)
+
+    if not parsed:
+        raise ValueError('The DER-encoded signature could not be parsed.')
+
+    return cdata
+
+
 def recover(message, recover_sig, hasher=sha256, context=GLOBAL_CONTEXT):
     msg_hash = hasher(message) if hasher is not None else message
     if len(msg_hash) != 32:
