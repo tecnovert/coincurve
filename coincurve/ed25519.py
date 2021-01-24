@@ -33,6 +33,21 @@ def ed25519_get_pubkey(privkey):
     return bytes(ffi.buffer(pubkey_output, 32))
 
 
+def ed25519_scalar_add(x, y):
+    output = ffi.new('unsigned char[{}]'.format(32))
+    x_le = x[::-1]
+    y_le = y[::-1]
+    lib.crypto_core_ed25519_scalar_add(output, x_le, y_le)
+    return bytes(ffi.buffer(output, 32))[::-1]
+
+
+def ed25519_add(x, y):
+    output = ffi.new('unsigned char[{}]'.format(32))
+    rv = lib.crypto_core_ed25519_add(output, x, y)
+    assert(rv == 0)
+    return bytes(ffi.buffer(output, 32))
+
+
 class Ed25519PrivateKey:
     def __init__(self, secret=None, context=GLOBAL_CONTEXT):
         self.context = context
